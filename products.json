@@ -1,0 +1,32 @@
+{
+  "products": [
+    {
+      "id": 1,
+      "name": "Windows 11 Pro Key",
+      "desc": "Лицензионный ключ для активации Windows 11 Pro. Бессрочная активация.",
+      "price": 50,
+      "category": "keys",
+      "delivery": "Ваш ключ: WXXX9-XXXXX-XXXXX-XXXXX-XXXXX\nИнструкция по активации прилагается.",
+      "available": true
+    },
+    {
+      "id": 2,
+      "name": "Netflix Premium (1 месяц)",
+      "desc": "Доступ к аккаунту Netflix Premium на 1 месяц. 4K Ultra HD.",
+      "price": 100,
+      "category": "accounts",
+      "delivery": "Email: example@mail.com\nПароль: TempPass123\nДата окончания: +30 дней",
+      "available": true
+    },
+    {
+      "id": 3,
+      "name": "VPN-подписка на 3 месяца",
+      "desc": "Быстрый VPN без ограничений. 3 месяца доступа.",
+      "price": 150,
+      "category": "services",
+      "delivery": "Код активации: VPN-3M-XXXX-XXXX\nСсылка для активации: https://example.com/activate",
+      "available": true
+    }
+  ],
+  "categories": ["keys", "accounts", "services"]
+}
