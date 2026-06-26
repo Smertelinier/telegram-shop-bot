@@ -30,11 +30,11 @@ USERS_FILE = "users.json"
 
 _products_cache = None
 _products_lock = asyncio.Lock()
-_products_dirty = False
 
 _users_cache = None
 _users_lock = asyncio.Lock()
-_users_dirty = False
+
+_state = {"products_dirty": False, "users_dirty": False}
 
 class AddProduct(StatesGroup):
     name = State()
@@ -67,12 +67,11 @@ def _get_products():
     return _products_cache
 
 async def _flush_products():
-    global _products_dirty
-    if _products_dirty:
+    if _state["products_dirty"]:
         async with _products_lock:
-            if _products_dirty:
+            if _state["products_dirty"]:
                 _save_products()
-                _products_dirty = False
+                _state["products_dirty"] = False
 
 async def _periodic_flush_products():
     while True:
@@ -103,12 +102,11 @@ def _get_users():
     return _users_cache
 
 async def _flush_users():
-    global _users_dirty
-    if _users_dirty:
+    if _state["users_dirty"]:
         async with _users_lock:
-            if _users_dirty:
+            if _state["users_dirty"]:
                 _save_users()
-                _users_dirty = False
+                _state["users_dirty"] = False
 
 async def _periodic_flush_users():
     while True:
@@ -124,8 +122,7 @@ def get_or_create_user(user_id, username=None, full_name=None):
             "full_name": full_name,
             "purchases": []
         }
-        global _users_dirty
-        _users_dirty = True
+        _state["users_dirty"] = True
     return users[uid]
 
 def is_admin(username):
@@ -271,8 +268,7 @@ async def addproduct_category_text(message: Message, state: FSMContext):
     products = _get_products()
     if cat not in products["categories"]:
         products["categories"].append(cat)
-        global _products_dirty
-        _products_dirty = True
+        _state["products_dirty"] = True
     await state.update_data(category=cat)
     await state.set_state(AddProduct.delivery)
     await message.answer("Введите содержимое доставки (текст ключа/данные):")
@@ -291,8 +287,7 @@ async def addproduct_delivery(message: Message, state: FSMContext):
         "delivery": message.text,
         "available": True
     })
-    global _products_dirty
-    _products_dirty = True
+    _state["products_dirty"] = True
     await state.clear()
     await message.answer(f"✅ Товар «{data['name']}» добавлен (ID: {new_id})")
 
@@ -435,8 +430,7 @@ async def successful_payment(message: Message):
         "date": datetime.now().isoformat(),
         "delivery": prod["delivery"]
     })
-    global _users_dirty
-    _users_dirty = True
+    _state["users_dirty"] = True
     await message.answer(
         f"✅ Оплата получена!\n\n"
         f"📦 Ваш товар:\n{prod['delivery']}\n\n"
@@ -456,8 +450,7 @@ async def handle_text(message: Message):
             pid = int(text)
             products = _get_products()
             products["products"] = [p for p in products["products"] if p["id"] != pid]
-            global _products_dirty
-            _products_dirty = True
+            _state["products_dirty"] = True
             await message.answer(f"✅ Товар ID {pid} удалён.")
         except ValueError:
             await message.answer("Некорректный ID.")
@@ -472,8 +465,7 @@ async def handle_text(message: Message):
                 await message.answer("Товар не найден.")
                 return
             prod["available"] = not prod["available"]
-            global _products_dirty
-            _products_dirty = True
+            _state["products_dirty"] = True
             status = "доступен" if prod["available"] else "недоступен"
             await message.answer(f"✅ Товар ID {pid} теперь {status}.")
         except ValueError:
